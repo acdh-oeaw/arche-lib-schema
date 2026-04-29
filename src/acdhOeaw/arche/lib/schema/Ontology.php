@@ -270,7 +270,7 @@ class Ontology {
     public function getClasses(): array {
         $distinct = new SplObjectStorage();
         foreach ($this->classes as $i) {
-            $distinct->attach($i);
+            $distinct->offsetSet($i);
         }
         return iterator_to_array($distinct);
     }
@@ -304,7 +304,7 @@ class Ontology {
         }
         $children = new SplObjectStorage();
         foreach ($this->classesRev[(string) $class] ?? [] as $i) {
-            $children->attach($i);
+            $children->offsetSet($i);
         }
         return iterator_to_array($children);
     }
@@ -739,7 +739,7 @@ class Ontology {
             if ($loaded->offsetExists($obj)) {
                 continue;
             }
-            $loaded->attach($obj);
+            $loaded->offsetSet($obj);
             match ($obj->type ?? null) {
                 RDF::OWL_CLASS => $this->loadClassRest($obj, $nmsp, $baseUrl),
                 RDF::OWL_DATATYPE_PROPERTY, RDF::OWL_OBJECT_PROPERTY => $this->loadPropertyRest($obj, $nmsp),
@@ -755,7 +755,7 @@ class Ontology {
         $data->classes = $data->ids;
         $class         = new ClassDesc($data, $data->ids, $nmsp, $baseUrl);
         $visited       = new SplObjectStorage();
-        $visited->attach($data);
+        $visited->offsetSet($data);
         $this->resolveParents($class, 'classes', $data->parent ?? [], $visited);
         sort($class->classes);
         foreach ($class->class as $i) {
@@ -778,7 +778,7 @@ class Ontology {
         }
         $prop    = new PropertyDesc($data, $data->ids, $nmsp);
         $visited = new SplObjectStorage();
-        $visited->attach($data);
+        $visited->offsetSet($data);
         $this->resolveParents($prop, 'properties', $data->parent ?? [], $visited);
         sort($prop->properties);
         $this->loadPropertyCommon($prop);
@@ -807,7 +807,7 @@ class Ontology {
             if ($visited->offsetExists($parent)) {
                 continue;
             }
-            $visited->attach($parent);
+            $visited->offsetSet($parent);
             $obj->$prop = array_merge($obj->$prop, $parent->ids ?? []);
             $this->resolveParents($obj, $prop, $parent->parent ?? [], $visited);
         }
@@ -861,7 +861,7 @@ class Ontology {
                         foreach ($pp->property as $puri) {
                             $c->properties[$puri] = $pp;
                         }
-                        $processedClasses->attach($c);
+                        $processedClasses->offsetSet($c);
                     }
                 }
             }
@@ -876,7 +876,7 @@ class Ontology {
                 $r = $this->restrictions[$rid];
                 if (!$processedRestr->offsetExists($r) && isset($c->properties[$r->onProperty[0]])) {
                     try {
-                        $processedRestr->attach($r);
+                        $processedRestr->offsetSet($r);
                         $p = $c->properties[$r->onProperty[0]];
                         if (!empty($r->range)) {
                             $p->range = $r->range;
