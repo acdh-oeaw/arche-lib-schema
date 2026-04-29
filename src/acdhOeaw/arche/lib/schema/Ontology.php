@@ -736,7 +736,7 @@ class Ontology {
         }
         $loaded = new SplObjectStorage();
         foreach ($objects as $obj) {
-            if ($loaded->contains($obj)) {
+            if ($loaded->offsetExists($obj)) {
                 continue;
             }
             $loaded->attach($obj);
@@ -804,7 +804,7 @@ class Ontology {
     private function resolveParents(BaseDesc $obj, string $prop, array $parents,
                                     SplObjectStorage $visited): void {
         foreach ($parents as $parent) {
-            if ($visited->contains($parent)) {
+            if ($visited->offsetExists($parent)) {
                 continue;
             }
             $visited->attach($parent);
@@ -855,7 +855,7 @@ class Ontology {
             $processedClasses = new SplObjectStorage();
             foreach ($classMatch as $cid) {
                 foreach ($this->classesRev[$cid] as $c) {
-                    if (!$processedClasses->contains($c)) {
+                    if (!$processedClasses->offsetExists($c)) {
                         $pp                   = clone($p); // clone because restrictions apply to a {property, class}
                         $pp->recommendedClass = count(array_intersect($c->classes, $p->recommendedClass)) > 0;
                         foreach ($pp->property as $puri) {
@@ -874,7 +874,7 @@ class Ontology {
             $processedRestr = new SplObjectStorage();
             foreach ($restrMatch as $rid) {
                 $r = $this->restrictions[$rid];
-                if (!$processedRestr->contains($r) && isset($c->properties[$r->onProperty[0]])) {
+                if (!$processedRestr->offsetExists($r) && isset($c->properties[$r->onProperty[0]])) {
                     try {
                         $processedRestr->attach($r);
                         $p = $c->properties[$r->onProperty[0]];
