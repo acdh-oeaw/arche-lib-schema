@@ -725,7 +725,7 @@ class Ontology {
             } elseif ($pred === 'ids') {
                 $objects[$sbj]->ids[] = $obj->getValue();
             } elseif ($obj instanceof LiteralInterface) {
-                $objects[$sbj]->$pred[$obj->getLang()] = $obj->getValue();
+                $objects[$sbj]->$pred[(string) $obj->getLang()] = $obj->getValue();
             } else {
                 $obj = $obj->getValue();
                 if (!isset($objects[$obj])) {
