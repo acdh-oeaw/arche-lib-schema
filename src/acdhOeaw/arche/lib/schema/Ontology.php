@@ -962,8 +962,10 @@ class Ontology {
             $concepts[(string) $concept->id] = $concept;
         }
         foreach ($concepts as $i) {
-            $i->broader  = array_map(fn($x) => $concepts[(string) $x->id], $i->broader);
-            $i->narrower = array_map(fn($x) => $concepts[(string) $x->id], $i->narrower);
+            /** @phpstan-ignore cast.string */
+            $i->broader  = array_map(fn($x) => $concepts[(string) $x], $i->broader);
+            /** @phpstan-ignore cast.string */
+            $i->narrower = array_map(fn($x) => $concepts[(string) $x], $i->narrower);
         }
         $result = [];
         foreach ($concepts as $c) {
