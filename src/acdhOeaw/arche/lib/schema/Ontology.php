@@ -962,8 +962,8 @@ class Ontology {
             $concepts[(string) $concept->id] = $concept;
         }
         foreach ($concepts as $i) {
-            $i->broader  = array_map(fn($x) => $concepts[(string) $x], $i->broader);
-            $i->narrower = array_map(fn($x) => $concepts[(string) $x], $i->narrower);
+            $i->broader  = array_map(fn($x) => $concepts[(string) $x->id], $i->broader);
+            $i->narrower = array_map(fn($x) => $concepts[(string) $x->id], $i->narrower);
         }
         $result = [];
         foreach ($concepts as $c) {
@@ -1037,7 +1037,9 @@ class Ontology {
             }
         }
         foreach ($concepts as $i) {
+            /** @phpstan-ignore instanceof.alwaysTrue */
             $i->broader  = array_map(fn($x) => $x instanceof SkosConceptDesc ? $x : $concepts[reset($x->ids)], $i->broader);
+            /** @phpstan-ignore instanceof.alwaysTrue */
             $i->narrower = array_map(fn($x) => $x instanceof SkosConceptDesc ? $x : $concepts[reset($x->ids)], $i->narrower);
         }
         return $concepts;

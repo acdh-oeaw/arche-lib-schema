@@ -85,6 +85,7 @@ class OntologyTest extends \PHPUnit\Framework\TestCase {
 
     public function testInit(): void {
         foreach ($this->getOntologies() as $k => $o) {
+            /** @phpstan-ignore method.alreadyNarrowedType */
             $this->assertNotNull($o, $k);
         }
     }
@@ -242,20 +243,27 @@ class OntologyTest extends \PHPUnit\Framework\TestCase {
         foreach ($this->getOntologies() as $k => $o) {
             $c = $o->getClass('https://vocabs.acdh.oeaw.ac.at/schema#Collection');
             $p = $c->properties['https://vocabs.acdh.oeaw.ac.at/schema#hasLicense'];
+            /** @phpstan-ignore property.private */
             $this->assertArrayHasKey('https://vocabs.acdh.oeaw.ac.at/archelicenses/cc-by-4-0', $p->vocabularyValues, $k);
+            /** @phpstan-ignore property.private */
             $this->assertEquals('CC BY 4.0', $p->vocabularyValues['https://vocabs.acdh.oeaw.ac.at/archelicenses/cc-by-4-0']->getLabel('en'), $k);
+            /** @phpstan-ignore property.private */
             $this->assertEquals('CC BY 4.0', $p->vocabularyValues['https://vocabs.acdh.oeaw.ac.at/archelicenses/cc-by-4-0']->getLabel('pl', 'en'), $k);
 
             $c       = $o->getClass('https://vocabs.acdh.oeaw.ac.at/schema#Resource');
             $p       = $c->properties['https://vocabs.acdh.oeaw.ac.at/schema#hasCategory'];
+            /** @phpstan-ignore property.private */
             $this->assertArrayHasKey('https://vocabs.acdh.oeaw.ac.at/archecategory/image', $p->vocabularyValues, $k);
+            /** @phpstan-ignore property.private */
             $concept = $p->vocabularyValues['https://vocabs.acdh.oeaw.ac.at/archecategory/image'];
             $this->assertInstanceOf(SkosConceptDesc::class, $concept->narrower[0]);
             $this->assertEquals($concept, $concept->narrower[0]->broader[0], $k);
 
             $c = $o->getClass('https://vocabs.acdh.oeaw.ac.at/schema#Project');
             $p = $c->properties['https://vocabs.acdh.oeaw.ac.at/schema#hasRelatedDiscipline'];
+            /** @phpstan-ignore property.private */
             $this->assertArrayHasKey('https://vocabs.acdh.oeaw.ac.at/oefosdisciplines/102003', $p->vocabularyValues);
+            /** @phpstan-ignore property.private */
             $this->assertEquals(['102003'], $p->vocabularyValues['https://vocabs.acdh.oeaw.ac.at/oefosdisciplines/102003']->notation);
         }
     }
@@ -266,6 +274,7 @@ class OntologyTest extends \PHPUnit\Framework\TestCase {
             $p  = $c->properties['https://vocabs.acdh.oeaw.ac.at/schema#hasLicense'];
             $vv = $p->getVocabularyValues();
             $this->assertEquals(count(array_unique(array_map('spl_object_id', $vv))), count($vv), $k);
+            /** @phpstan-ignore property.private */
             $this->assertEquals(count(array_unique(array_map('spl_object_id', $p->vocabularyValues))), count($vv), $k);
         }
     }

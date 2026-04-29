@@ -11,7 +11,7 @@ jobs:
         # using the PHP version as provided by the build/docker/Dockerfile
         php: [8.1, 8.2, 8.3, 8.4, 8.5]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
@@ -19,6 +19,8 @@ jobs:
         coverage: xdebug
       env:
         fail-fast: true
+    - name: phpstan
+      run: vendor/bin/phpstan analyse -l 6 src tests
     - name: clone repo config
       run: |
         git clone --depth 1 --branch arche https://github.com/acdh-oeaw/arche-docker-config.git config
@@ -46,26 +48,11 @@ jobs:
         mkdir -p build/logs
         XDEBUG_MODE=coverage ./vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
     - name: coveralls
+      if: ${{ matrix.php == 8.5 }}
       run: |
         export COVERALLS_RUN_LOCALLY=1
         export COVERALLS_REPO_TOKEN=${{ secrets.coverallsToken }}
         rm -fR composer.json composer.lock vendor
         composer require php-coveralls/php-coveralls
         php vendor/bin/php-coveralls -v
-  phpstan:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.4
-    - uses: actions/cache@v4
-      with: 
-        path: vendor
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: ${{ runner.os }}-composer-
-    - name: composer
-      run: composer update
-    - name: phpstan
-      run: vendor/bin/phpstan analyse -l 8 src tests || true
 

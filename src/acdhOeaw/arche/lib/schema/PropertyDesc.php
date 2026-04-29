@@ -125,9 +125,9 @@ class PropertyDesc extends BaseDesc {
      * 
      * It's initialized automatically upon the first read.
      * 
-     * @var array<SkosConceptDesc> | null
+     * @var array<SkosConceptDesc>
      */
-    private ?array $vocabularyValues;
+    private array $vocabularyValues;
     private Ontology $ontologyObj;
 
     /**
@@ -137,7 +137,7 @@ class PropertyDesc extends BaseDesc {
      * @param ?string $nmsp
      * @param ?string $skipNmsp
      */
-    public function __construct(object $d = null, array $ids = [],
+    public function __construct(?object $d = null, array $ids = [],
                                 ?string $nmsp = null, ?string $skipNmsp = null) {
         parent::__construct($d, $ids, $nmsp, $skipNmsp);
 
