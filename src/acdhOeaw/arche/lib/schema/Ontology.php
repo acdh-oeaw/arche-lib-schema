@@ -168,6 +168,24 @@ class Ontology {
      */
     private array $restrictions = [];
 
+    /**
+     * Cache for getVocabularyValues()
+     * @var array<string, array<SkosConceptDesc>>
+     */
+    private array $vocabularyCache = [];
+
+    /**
+     * Cache for getVocabularyValue()
+     * @var array<string, array<string, SkosConceptDesc>>
+     */
+    private array $vocabularyCacheGet = [];
+
+    /**
+     * Cache for checkVocabularyValue()
+     * @var array<string, array<string, string>>
+     */
+    private array $vocabularyCacheCheck = [];
+
     public function getNamespace(): string {
         return (string) ($this->schema->ontologyNamespace ?? $this->schema->namespaces->ontology);
     }
@@ -328,19 +346,23 @@ class Ontology {
      * @return array<SkosConceptDesc>
      */
     public function getVocabularyValues(string $vocabularyUrl): array {
-        if (isset($this->pdo)) {
-            $query = "
-            SELECT r.id
-            FROM
-                identifiers i
-                JOIN relations r ON r.target_id = i.id AND r.property = ?
-            WHERE ids = ?
-        ";
-            $param = [RDF::SKOS_IN_SCHEME, $vocabularyUrl];
-            return $this->fetchVocabularyValuesDb($query, $param);
-        } else {
-            return $this->fetchVocabularyValuesRest($vocabularyUrl);
+        if (!isset($this->vocabularyCache[$vocabularyUrl])) {
+            if (isset($this->pdo)) {
+                $query  = "
+                    SELECT r.id
+                    FROM
+                        identifiers i
+                        JOIN relations r ON r.target_id = i.id AND r.property = ?
+                    WHERE ids = ?
+                ";
+                $param  = [RDF::SKOS_IN_SCHEME, $vocabularyUrl];
+                $values = $this->fetchVocabularyValuesDb($query, $param);
+            } else {
+                $values = $this->fetchVocabularyValuesRest($vocabularyUrl);
+            }
+            $this->vocabularyCache[$vocabularyUrl] = $values;
         }
+        return $this->vocabularyCache[$vocabularyUrl];
     }
 
     /**
@@ -359,14 +381,17 @@ class Ontology {
         if ($id === false) {
             return null;
         }
-        if (isset($this->pdo)) {
-            $query = "SELECT id FROM identifiers WHERE ids = ?";
-            $param = [$id];
-            $value = $this->fetchVocabularyValuesDb($query, $param);
-        } else {
-            $value = $this->fetchVocabularyValuesRest($vocabularyUrl, $id);
+        if (!isset($this->vocabularyCacheGet[$vocabularyUrl][$id])) {
+            if (isset($this->pdo)) {
+                $query = "SELECT id FROM identifiers WHERE ids = ?";
+                $param = [$id];
+                $value = $this->fetchVocabularyValuesDb($query, $param);
+            } else {
+                $value = $this->fetchVocabularyValuesRest($vocabularyUrl, $id);
+            }
+            $this->vocabularyCacheGet[$vocabularyUrl][$id] = array_pop($value);
         }
-        return array_pop($value);
+        return $this->vocabularyCacheGet[$vocabularyUrl][$id];
     }
 
     /**
@@ -381,11 +406,16 @@ class Ontology {
      */
     public function checkVocabularyValue(string $vocabularyUrl, string $value,
                                          int $searchIn = self::VOCABSVALUE_ID): string | false {
-        if (isset($this->pdo)) {
-            return $this->checkVocabularyValueDb($vocabularyUrl, $value, $searchIn);
-        } else {
-            return $this->checkVocabularyValueRest($vocabularyUrl, $value, $searchIn);
+        $idx = (string)$searchIn."\a".$value;
+        if (!isset($this->vocabularyCacheCheck[$vocabularyUrl][$idx])) {
+            if (isset($this->pdo)) {
+                $id = $this->checkVocabularyValueDb($vocabularyUrl, $value, $searchIn);
+            } else {
+                $id = $this->checkVocabularyValueRest($vocabularyUrl, $value, $searchIn);
+            }
+            $this->vocabularyCacheCheck[$vocabularyUrl][$idx] = $id;
         }
+        return $this->vocabularyCacheCheck[$vocabularyUrl][$idx];
     }
 
     private function checkVocabularyValueDb(string $vocabularyUrl,

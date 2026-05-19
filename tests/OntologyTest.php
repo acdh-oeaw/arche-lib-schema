@@ -387,4 +387,35 @@ class OntologyTest extends \PHPUnit\Framework\TestCase {
             $this->assertInstanceOf(PropertyDesc::class, $p[0], $k);
         }
     }
+
+    public function testVocabularyCache(): void {
+        foreach ($this->getOntologies() as $k => $o) {
+            $c = $o->getClass('https://vocabs.acdh.oeaw.ac.at/schema#Collection');
+            $p = $c->properties['https://vocabs.acdh.oeaw.ac.at/schema#hasLicense'];
+
+            $t1 = microtime(true);
+            $r1 = $p->checkVocabularyValue('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t2 = microtime(true);
+            $r2 = $p->checkVocabularyValue('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t3 = microtime(true);
+            $this->assertEquals($r2, $r1);
+            $this->assertLessThan($t2 - $t1, 10 * ($t3 - $t2));
+
+            $t1 = microtime(true);
+            $r1 = $p->getVocabularyValue('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t2 = microtime(true);
+            $r2 = $p->getVocabularyValue('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t3 = microtime(true);
+            $this->assertEquals($r2, $r1);
+            $this->assertLessThan($t2 - $t1, 10 * ($t3 - $t2));
+
+            $t1 = microtime(true);
+            $r1 = $p->getVocabularyValues('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t2 = microtime(true);
+            $r2 = $p->getVocabularyValues('https://vocabs.acdh.oeaw.ac.at/archelicenses/publicdomain-1-0');
+            $t3 = microtime(true);
+            $this->assertEquals($r2, $r1);
+            $this->assertLessThan($t2 - $t1, 10 * ($t3 - $t2));
+        }
+    }
 }
